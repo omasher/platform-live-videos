@@ -1,10 +1,11 @@
 import concurrent.futures
+import json 
 
-import requests
+import http.client
 
 from .constants import (
-    COOKIES, RECORDINGS_QUERY,
-    LIVE_EVENTS_QUERY, HEADERS,
+    RECORDINGS_QUERY,
+    LIVE_EVENTS_QUERY, get_header,
     BASE_URL)
 from .logger import logger
 from .utils import transform_data, EventType
@@ -34,24 +35,30 @@ def get_json_data(offset, event_type):
 def load_url(page, event_type, url, data_path):
     offset = (page - 1) * 100
     json_data = get_json_data(offset=offset, event_type=event_type)
-    response = requests.post(
+    headers = get_header(page=page)
+    conn = http.client.HTTPSConnection(BASE_URL)
+    conn.request(
+        'POST',
         url,
-        cookies=COOKIES,
-        headers=HEADERS,
-        json=json_data,
+        json.dumps(json_data),
+        headers
     )
-    data_dict = response.json()
+    response = conn.getresponse()
+    response_data = response.read()
+    data_dict = json.loads(response_data)
+    conn.close()
 
     results = live_event(data_dict, data_path)
     logger.info(f'Page: {page}, Offset: {offset}')
     logger.info(f"Data loaded. Records = {len(results)}")
+
     return results
 
 
 def pull_live_data(event_type, pages, data_path):
     result_list = []
 
-    url = f'{BASE_URL}{get_api_path()}'
+    url = get_api_path() 
     with concurrent.futures.ThreadPoolExecutor(max_workers=5) as executor:
         fut = {executor.submit(load_url, page, event_type=event_type, url=url,
                                data_path=data_path): page for page in
@@ -61,9 +68,9 @@ def pull_live_data(event_type, pages, data_path):
             try:
                 data = future.result()
                 result_list.extend(data)
-            except concurrent.futures.CancelledError as ex:
+            except concurrent.futures.CancelledError:
                 logger.error(f"Error: {page} request was cancelled")
-            except concurrent.futures.TimeoutError as ex:
+            except concurrent.futures.TimeoutError:
                 logger.error(f"Error: {page} request timed out")
 
     transform_data(result_list, event_type=event_type)
