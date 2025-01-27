@@ -36,17 +36,17 @@ def load_url(page, event_type, url, data_path):
     offset = (page - 1) * 100
     json_data = get_json_data(offset=offset, event_type=event_type)
     headers = get_header(page=page)
-    conn = http.client.HTTPSConnection(BASE_URL)
-    conn.request(
-        'POST',
-        url,
-        json.dumps(json_data),
-        headers
-    )
-    response = conn.getresponse()
-    response_data = response.read()
-    data_dict = json.loads(response_data)
-    conn.close()
+    
+    with http.client.HTTPSConnection(BASE_URL) as conn:
+        conn.request(
+            'POST',
+            url,
+            json.dumps(json_data),
+            headers
+        )
+        response = conn.getresponse()
+        response_data = response.read()
+        data_dict = json.loads(response_data)
 
     results = live_event(data_dict, data_path)
     logger.info(f'Page: {page}, Offset: {offset}')
