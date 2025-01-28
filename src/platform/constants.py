@@ -1,8 +1,22 @@
-BASE_URL = "example.com"
+BASE_URL = "https://example.com"
 
 
-def get_header(page=1):
-    return {}
+def get_header(page):
+    return {
+    'User-Agent': '',
+    'Accept': 'application/graphql-response+json, application/json',
+    'Accept-Language': 'en-US,en;q=0.5',
+    'Accept-Encoding': 'gzip, deflate, br, zstd',
+    'Referer': f'https://example.com/path/?page={page}',
+    'content-type': 'application/json',
+    'Origin': 'https://example.com',
+    'Connection': 'keep-alive',
+    'Cookie': '',
+    'Sec-Fetch-Dest': 'empty',
+    'Sec-Fetch-Mode': 'cors',
+    'Sec-Fetch-Site': 'same-origin',
+    'Priority': 'u=0',
+}
 
 
 RECORDINGS_QUERY = {
