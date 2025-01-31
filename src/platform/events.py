@@ -3,11 +3,12 @@ import os
 import xlsxwriter
 
 COLUMNS = ['EventID',
+           'Date',
+           'Authors',
            'Topic',
            'EventName',
            'EventDescription',
-           'Date',
-           'Authors']
+           ]
 
 
 def get_static_path(event_type: str):
@@ -39,11 +40,12 @@ def write_to_excel(events, event_type):
         registered = True if event.get('registration_status'
                                        ) == 'registered' else False
         row = [event_id,
+               event_date,
+               authors,
                topic,
                name,
                description,
-               event_date,
-               authors]
+               ]
         if event_type == "events":
             row.append(registered)
         rows.append(row)

@@ -2,7 +2,13 @@ import concurrent.futures
 import json
 import urllib.request
 
-from .constants import RECORDINGS_QUERY, LIVE_EVENTS_QUERY, get_header, BASE_URL
+from .constants import (
+    RECORDINGS_QUERY,
+    LIVE_EVENTS_QUERY,
+    get_header,
+    API_URL,
+    BASE_URL,
+)
 from .logger import logger
 from .utils import transform_data, EventType
 
@@ -10,10 +16,6 @@ from .utils import transform_data, EventType
 def live_event(data_dict, data_path):
     results = data_dict["data"][data_path]["results"]
     return results
-
-
-def get_api_path(page=1, offset=None):
-    return "/api/v1/attend/live-events/graphql"
 
 
 def pull_data(event_type, pages, data_path=None):
@@ -30,9 +32,13 @@ def get_json_data(offset, event_type):
 
 
 def load_url(page, event_type, url, data_path):
+    live_url = f"{BASE_URL}/live-events/?page={page}"
+    rec_url = f"{BASE_URL}/live-events/your-recordings/?page={page}"
+    referer = rec_url if event_type == EventType.RECORDINGS else live_url
+
     offset = (page - 1) * 100
     json_data = get_json_data(offset=offset, event_type=event_type)
-    headers = get_header(page=page)
+    headers = get_header(referer=referer)
     json_data_bytes = json.dumps(json_data).encode("utf-8")
 
     req = urllib.request.Request(
@@ -51,11 +57,10 @@ def load_url(page, event_type, url, data_path):
 def pull_live_data(event_type, pages, data_path):
     result_list = []
 
-    url = f"{BASE_URL}{get_api_path()}"
     with concurrent.futures.ThreadPoolExecutor(max_workers=5) as executor:
         fut = {
             executor.submit(
-                load_url, page, event_type=event_type, url=url, data_path=data_path
+                load_url, page, event_type=event_type, url=API_URL, data_path=data_path
             ): page
             for page in range(1, pages + 1)
         }

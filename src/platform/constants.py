@@ -1,21 +1,22 @@
 BASE_URL = "https://example.com"
+API_ENDPOINT = '/api'
 
-
-def get_header(page):
+# Note: Update cookie and User Agent Values before use
+def get_header(referer):
     return {
     'User-Agent': '',
     'Accept': 'application/graphql-response+json, application/json',
     'Accept-Language': 'en-US,en;q=0.5',
     'Accept-Encoding': 'gzip, deflate, br, zstd',
-    'Referer': f'https://example.com/path/?page={page}',
+    'Referer': referer,
     'content-type': 'application/json',
-    'Origin': 'https://example.com',
+    'Origin': BASE_URL,
     'Connection': 'keep-alive',
     'Cookie': '',
-    'Sec-Fetch-Dest': 'empty',
     'Sec-Fetch-Mode': 'cors',
+    'Sec-Fetch-Dest': 'empty',
     'Sec-Fetch-Site': 'same-origin',
-    'Priority': 'u=0',
+    'Priority': 'u=6',
 }
 
 
@@ -44,3 +45,5 @@ LIVE_EVENTS_QUERY = {
         "topics": None,
     },
 }
+
+API_URL = f"{BASE_URL}{API_ENDPOINT}"
