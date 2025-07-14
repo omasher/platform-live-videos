@@ -1,4 +1,5 @@
 import os
+from contextvars import ContextVar
 from pathlib import Path
 
 import xlsxwriter
@@ -10,16 +11,18 @@ COLUMNS = ['EventID',
            'EventName',
            'EventDescription',
            ]
+output_var = ContextVar("output_var")
 
 
-def get_static_path(event_type: str, output_path: str) -> str:
+def get_static_path(event_type: str) -> str:
     home_dir = Path.home()
+    output_path = output_var.get()
     return os.path.join(home_dir, output_path, event_type)
 
 
-def write_to_excel(events, event_type: str, output_path: str):
+def write_to_excel(events, event_type: str):
     print(f'# of events found: {len(events)}')
-    static_csv_path = get_static_path(f'{event_type}.xlsx', output_path)
+    static_csv_path = get_static_path(f'{event_type}.xlsx')
     workbook = xlsxwriter.Workbook(static_csv_path)
     worksheet = workbook.add_worksheet()
 

@@ -1,30 +1,32 @@
-from contextvars import ContextVar
 from enum import Enum
 from typing import List
 
 from .constants import BASE_URL
 from .events import write_to_excel
 
-MAX_SHORT_TEXT_LENGTH =  32
-MAX_LONG_TEXT_LENGTH = 66 
+MAX_SHORT_TEXT_LENGTH = 32
+MAX_LONG_TEXT_LENGTH = 66
 
-output_var = ContextVar("output_var")
 
 class EventType(str, Enum):
     RECORDINGS = 'recordings'
     EVENTS = 'events'
 
+
 class ColTextType(str, Enum):
     SHORT = 'short'
     LONG = 'long'
 
+
 def truncate_text(text: str, col_text_type: ColTextType):
     truncated_text = text
-    if col_text_type == ColTextType.SHORT and len(text) > MAX_SHORT_TEXT_LENGTH:
+    if col_text_type == ColTextType.SHORT and len(
+            text) > MAX_SHORT_TEXT_LENGTH:
         truncated_text = f'{text[:MAX_SHORT_TEXT_LENGTH]}...'
     if col_text_type == ColTextType.LONG and len(text) > MAX_LONG_TEXT_LENGTH:
-        truncated_text = f'{text[:MAX_SHORT_TEXT_LENGTH]}...'        
+        truncated_text = f'{text[:MAX_SHORT_TEXT_LENGTH]}...'
     return truncated_text
+
 
 def transform_data(data: List[dict], event_type):
     results = []
@@ -38,7 +40,7 @@ def transform_data(data: List[dict], event_type):
         description = (item.get("shortDescription", "")
                        .replace("\n", ""))
         event_date = item.get("startDatetime", "").split("T")[0]
-        authors =  " ".join(
+        authors = " ".join(
             [contributor.get("fullName", "") for contributor in item
             .get("contributors", [])])
         authors = truncate_text(authors, col_text_type=ColTextType.SHORT)
@@ -59,5 +61,4 @@ def transform_data(data: List[dict], event_type):
             "registration_status": registration_status
         }
         results.append(transformed_data)
-    output_path = output_var.get()
-    write_to_excel(results, event_type=event_type, output_path=output_path)
+    write_to_excel(results, event_type=event_type)

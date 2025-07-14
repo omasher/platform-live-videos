@@ -1,8 +1,10 @@
 import sys
 
 from .api import pull_data
+from .events import output_var
 from .logger import logger
-from .utils import EventType, output_var
+from .utils import EventType
+
 
 def is_valid_event_type(e_type):
     return e_type in EventType.__members__.values()
@@ -13,7 +15,6 @@ if __name__ == "__main__":
     if len(sys.argv) != 4:
         logger.error(usage)
         sys.exit(1)
-
 
     try:
         event_type = sys.argv[1]
