@@ -1,4 +1,4 @@
-import logging
+from contextvars import ContextVar
 from enum import Enum
 from typing import List
 
@@ -7,6 +7,8 @@ from .events import write_to_excel
 
 MAX_SHORT_TEXT_LENGTH =  32
 MAX_LONG_TEXT_LENGTH = 66 
+
+output_var = ContextVar("output_var")
 
 class EventType(str, Enum):
     RECORDINGS = 'recordings'
@@ -57,5 +59,5 @@ def transform_data(data: List[dict], event_type):
             "registration_status": registration_status
         }
         results.append(transformed_data)
-
-    write_to_excel(results, event_type=event_type)
+    output_path = output_var.get()
+    write_to_excel(results, event_type=event_type, output_path=output_path)
